@@ -1,0 +1,108 @@
+name: 'C++ CI'
+
+# Запускаем workflow при пуше в ветки lab1 или feature/github_actions
+on: 
+  # событие запускаем
+  push:
+    branches:
+      - lab2
+      - feature/github_actions
+
+jobs:
+  build_ubuntu:
+    # Запускаем job на ubuntu-latest
+    runs-on: ubuntu-latest
+    # Предоставляем разрешения на запись во все ресурсы
+    permissions: write-all
+    steps:
+      # Клонируем репозиторий, включая submodules
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      # Устанавливаем libboost-test-dev
+      - run: sudo apt-get update && sudo apt-get install libboost-test-dev -y
+      # Конфигурируем проект с помощью CMake, используя номер запуска для PATCH_VERSION
+      - run: cmake . -DPATCH_VERSION=${{ github.run_number }}
+      # Строим проект с помощью CMake
+      - run: cmake --build .
+      # Запускаем тесты
+      - name: Run Tests
+        run: |
+          ctest --output-on-failure || exit 1  # Проверяем наличие тестов и их успешное выполнение
+      # Создаем пакет
+      - run: cmake --build . --target package
+      # Создаем релиз для Ubuntu
+      - name: Create Release (Ubuntu)
+        id: create_release_ubuntu
+        # Используем action для создания релиза
+        uses: actions/create-release@v1
+        # Используем GITHUB_TOKEN для аутентификации
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # Устанавливаем tag_name, release_name и другие параметры
+        with:
+          tag_name: v${{ github.run_number }} # Используем номер запуска для тега
+          release_name: Release ${{ github.run_number }} (Ubuntu)
+          draft: false # Не публикуем релиз в черновике
+          prerelease: false # Не публикуем как предварительную версию
+      # Загружаем релизный ассет для Ubuntu
+      - name: Upload Release Asset (Ubuntu)
+        id: upload-release-asset-ubuntu
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release_ubuntu.outputs.upload_url }}
+          asset_path: ./lab2-0.0.${{ github.run_number }}-Linux.deb
+          asset_name: lab2-0.0.${{ github.run_number }}-Linux.deb
+          asset_content_type: application/vnd.debian.binary-package
+          # allowUpdates: true # Разрешаем обновление уже загруженного ассета
+
+  build_macos:
+    # Запускаем job на macos-latest
+    runs-on: macos-latest
+    # Предоставляем разрешения на запись во все ресурсы
+    permissions: write-all
+    steps:
+      # Клонируем репозиторий, включая submodules
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      # Устанавливаем boost с помощью Homebrew
+      - run: brew install boost
+      # Конфигурируем проект с помощью CMake, используя номер запуска для PATCH_VERSION
+      - run: cmake . -DPATCH_VERSION=${{ github.run_number }}
+      # Строим проект с помощью CMake
+      - run: cmake --build .
+      # Запускаем тесты
+      - name: Run Tests
+        run: |
+          ctest --output-on-failure || exit 1  # Проверяем наличие тестов и их успешное выполнение
+      
+      # Создаем пакет
+      - run: cmake --build . --target package
+      # Создаем релиз для MacOS
+      - name: Create Release (MacOS)
+        id: create_release_macos
+        # Используем action для создания релиза
+        uses: actions/create-release@v1
+        # Используем GITHUB_TOKEN для аутентификации
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # Устанавливаем tag_name, release_name и другие параметры
+        with:
+          tag_name: ${{ github.run_number }} # Используем номер запуска для тега
+          release_name: Release ${{ github.run_number }} (MacOS)
+          draft: false # Не публикуем релиз в черновике
+          prerelease: false # Не публикуем как предварительную версию
+      # Загружаем релизный ассет для MacOS
+      - name: Upload Release Asset (MacOS)
+        id: upload-release-asset-macos
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release_macos.outputs.upload_url }}
+          asset_path: ./lab2-0.0.${{ github.run_number }}-Darwin.zip
+          asset_name: lab2-0.0.${{ github.run_number }}-Darwin.zip
+          asset_content_type: application/zip
