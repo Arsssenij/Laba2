@@ -3,8 +3,8 @@ set(PATCH_VERSION "1" CACHE INTERNAL "Patch version")
 set(PROJECT_VESRION 0.0.${PATCH_VERSION})
 # Создает переменные PATCH_VERSION и PROJECT_VESRION для управления версиями проекта.
 
-project(lab2 VERSION ${PROJECT_VESRION}) # Определяет имя проекта lab2 и использует переменную PROJECT_VESRION для указания версии проекта.
-# add_executable(lab2 main.cpp cool.cpp cool.h)
+project(laba2 VERSION ${PROJECT_VESRION}) # Определяет имя проекта laba2 и использует переменную PROJECT_VESRION для указания версии проекта.
+# add_executable(laba2 main.cpp cool.cpp cool.h)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CXX_STANDARD_REQUIRED ON)
