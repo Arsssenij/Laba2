@@ -20,7 +20,7 @@ FetchContent_MakeAvailable(googletest)
 # создает список COMMON_SRCS с одним исходным файлом cool.cpp 
 # этот файл содержит общий код, который будет использоваться в тестах
 set(COMMON_SRCS
-    "../ip_filter.cpp"
+    "../cool.cpp"
 )
 # cоздает исполняемый файл с именем "tests", который будет содержать исходный код из файлов tests.cpp и cool.cpp
 add_executable(tests tests.cpp ${COMMON_SRCS})

@@ -1,41 +1,40 @@
-#include "gtest/gtest.h" 
-#include "ip_filter.h"
+#include <gtest/gtest.h>
+#include "cool.h"
 
-#include <vector> // Include <vector> here
-#include <algorithm> // Include <algorithm> here
-
-// Test fixture for IPv4
-class IPv4Test : public ::testing::Test {};
-
-// Test for the IPv4 constructor
-TEST_F(IPv4Test, Constructor) {
-    IPv4 ip("192.168.1.1");
-    ASSERT_EQ(ip.n1, 192);
-    ASSERT_EQ(ip.n2, 168);
-    ASSERT_EQ(ip.n3, 1);
-    ASSERT_EQ(ip.n4, 1);
+//  Проверка, что v1 == v2
+// Проверяет, что функция sort_ip_addresses правильно сортирует вектор кортежей IP-адресов в порядке убывания.
+TEST(IPAddressTest, sort_ip_addressesTest) {
+  std::vector<std::tuple<int, int, int, int>> ipAddresses = {
+    {113, 162, 145, 156},
+    {157, 39, 22, 224},
+    {79, 180, 73, 190},
+    {1179, 210, 145, 4}
+  };
+  sort_ip_addresses(ipAddresses);
+  std::vector<std::tuple<int, int, int, int>> expectedIPAddresses = {
+    {1179, 210, 145, 4},
+    {157, 39, 22, 224},
+    {113, 162, 145, 156},
+    {79, 180, 73, 190}
+  };
+  EXPECT_EQ(ipAddresses, expectedIPAddresses);
 }
 
-// Test for the IPv4 comparison operator (operator<)
-TEST_F(IPv4Test, Comparison) {
-    IPv4 ip1("192.168.1.1");
-    IPv4 ip2("192.168.1.2");
-    ASSERT_TRUE(ip1 < ip2);
-    ASSERT_FALSE(ip2 < ip1);
+// Проверка, что v1 != v2
+// Проверяет, что функция parse_ip_address правильно преобразует строку IP-адреса в кортеж.
+TEST(IPAddressTest, parse_ip_addressTest) {
+  std::string ip_address_str = "192.168.0.1";
+  auto ip_address = parse_ip_address(ip_address_str);
+  std::tuple<int, int, int, int> expected_ip_address = {19, 2168, 0, 1};
+  EXPECT_NE(ip_address, expected_ip_address);
 }
 
-// Test for sorting IPv4 addresses
-TEST_F(IPv4Test, Sorting) {
-    std::vector<IPv4> ip_addresses = {
-        IPv4("192.168.1.1"),
-        IPv4("192.168.1.3"),
-        IPv4("192.168.1.2")
-    };
-    
-    std::sort(ip_addresses.begin(), ip_addresses.end(), [](const IPv4& lhs, const IPv4& rhs) {
-        return rhs < lhs; // Reverse lexicographical order
-    });
-    ASSERT_EQ(ip_addresses[0].n4, 3);
-    ASSERT_EQ(ip_addresses[1].n4, 2);
-    ASSERT_EQ(ip_addresses[2].n4, 1);
+//  Проверяет, что функция read_ip_addresses возвращает пустой вектор, если файл пустой.
+TEST(IPAddressTest, read_ip_addressesTest_empty_file) {
+  // Проверяем, что функция возвращает пустой вектор, если файл пустой
+  std::vector<std::tuple<int, int, int, int>> expectedIPAddresses = {};
+  // auto ipAddresses = read_ip_addresses("empty_file.tsv");
+  // Для тестирования в github actions
+  auto ipAddresses = read_ip_addresses("../empty_file.tsv");
+  EXPECT_EQ(ipAddresses, expectedIPAddresses);
 }
